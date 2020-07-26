@@ -1,0 +1,20 @@
+extends components/base
+
+block main
+    section
+        center
+            p
+                b A game of describing words
+
+    section
+        table
+            tr
+                td #[a(href='/person') Person]
+                td #[a(href='/world') World]
+                td #[a(href='/object') Object]
+                td #[a(href='/action') Action]
+                td #[a(href='/nature') Nature]
+                td #[a(href='/random') Random]
+
+        if word
+            h3 #[span= category]: #[b= word]
