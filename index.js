@@ -27,6 +27,7 @@ const Words = require('./modules/Words')
     app.set('view engine', 'pug')
 
     app.use(express.static('public'))
+    app.use(express.static('public/favicons'))
     app.use(morgan('dev'))
     app.use(bodyParser.urlencoded({ extended: true }))
     app.use(bodyParser.json())
@@ -121,6 +122,10 @@ const Words = require('./modules/Words')
 
     app.get(['/', '/person', '/world', '/object', '/action', '/nature', '/random'], (req, res) => {
         let category = {}
+
+        if (typeof req.session.complete === 'undefined') req.session.complete = []
+        if (typeof req.session.skipped === 'undefined') req.session.skipped = []
+        if (typeof req.session.running === 'undefined') req.session.running = false
 
         if (req.originalUrl.includes('person')) {
             category = { name: 'Person', slug: 'person' }

@@ -43,11 +43,12 @@ block main
                         td.no-base
                             form(action=`/stop`, method="GET").no-bottom
                                 input(type='submit', value='Stop Run').hyperlink
-            else
-                form(action=`/start`, method="GET").no-bottom
-                    label(for='time') Round time (minutes)
-                    input(type='number', name='time', placeholder='Round time (minutes)', value='2')#time
-                    input(type='submit', value='Start Run').hyperlink
+        
+        if !session.running
+            form(action=`/start`, method="GET").no-bottom
+                label(for='time') Round time (minutes)
+                input(type='number', name='time', placeholder='Round time (minutes)', value='2')#time
+                input(type='submit', value='Start Run').hyperlink
 
         if typeof timeleft !== 'undefined'
             p #[span#timeleft= timeleft] seconds remain.
