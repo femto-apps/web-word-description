@@ -42,36 +42,41 @@ block main
 
                         td.no-base
                             form(action=`/stop`, method="GET").no-bottom
+                                input(type='hidden', name='category', value=category)
+                                input(type='hidden', name='word', value=word)
                                 input(type='submit', value='Stop Run').hyperlink
         
         if !session.running
             form(action=`/start`, method="GET").no-bottom
                 label(for='time') Round time (minutes)
                 input(type='number', name='time', placeholder='Round time (minutes)', value='2')#time
+                input(type='hidden', name='category', value=category)
+                input(type='hidden', name='word', value=word)
                 input(type='submit', value='Start Run').hyperlink
 
-        if typeof timeleft !== 'undefined'
-            p #[span#timeleft= timeleft] seconds remain.
+        if word
+            if typeof timeleft !== 'undefined'
+                p #[span#timeleft= timeleft] seconds remain.
 
-        if session.complete.length
-            p Completed #{session.complete.length} words: #[span= session.complete.map(item => item.word).join(', ')]
-        else
-            p No words completed yet.
+            if session.complete.length
+                p Completed #{session.complete.length} words: #[span= session.complete.map(item => item.word).join(', ')]
+            else
+                p No words completed yet.
 
 
-        if session.skipped.length
-            p Skipped #{session.skipped.length} words.
-        for skip in session.skipped
-            form(action=`/complete`, method="GET").no-bottom
-                input(type='hidden', name='category', value=skip.category)
-                input(type='hidden', name='word', value=skip.word)
-                input(type='hidden', name='skipped', value='true')
-                input(type='submit', value=`${JSON.parse(skip.category).name}: ${skip.word}`).hyperlink.no-bottom
+            if session.skipped.length
+                p Skipped #{session.skipped.length} words.
+            for skip in session.skipped
+                form(action=`/complete`, method="GET").no-bottom
+                    input(type='hidden', name='category', value=skip.category)
+                    input(type='hidden', name='word', value=skip.word)
+                    input(type='hidden', name='skipped', value='true')
+                    input(type='submit', value=`${JSON.parse(skip.category).name}: ${skip.word}`).hyperlink.no-bottom
 
-        if typeof timeleft !== 'undefined'
-            script.
-                const end = #{session.end};
-                setInterval(() => {
-                    const timeleft = Math.max(0, Math.floor((end - (+new Date())) / 1000))
-                    document.getElementById('timeleft').innerHTML = timeleft
-                }, 1000)
+            if typeof timeleft !== 'undefined'
+                script.
+                    const end = #{session.end};
+                    setInterval(() => {
+                        const timeleft = Math.max(0, Math.floor((end - (+new Date())) / 1000))
+                        document.getElementById('timeleft').innerHTML = timeleft
+                    }, 1000)

@@ -112,11 +112,21 @@ const Words = require('./modules/Words')
         req.session.running = true
         req.session.time = Number(req.query.time)
         req.session.end = (+new Date()) + Number(req.query.time) * 60 * 1000
+        req.session.show_word = {
+            word: req.query.word,
+            category: req.query.category
+        }
+
         res.redirect('/' + (req.session.last.slug || ''))
     })
 
     app.get('/stop', (req, res) => {
         req.session.running = false
+        req.session.show_word = {
+            word: req.query.word,
+            category: req.query.category
+        }
+        
         res.redirect('/' + (req.session.last.slug || ''))
     })
 
@@ -141,7 +151,7 @@ const Words = require('./modules/Words')
             category = { name: 'Random', slug: 'random' }
         }
 
-        const word = words.generateWord(category.slug)
+        let word = words.generateWord(category.slug)
         req.session.last = category
 
         const { time, score, skipped } = req.query
@@ -149,6 +159,12 @@ const Words = require('./modules/Words')
         let timeleft = undefined
         if (req.session.end) {
             timeleft = Math.max(0, Math.floor((req.session.end - (+new Date())) / 1000))
+        }
+
+        if (req.session.show_word) {
+            category = JSON.parse(req.session.show_word.category)
+            word = req.session.show_word.word
+            req.session.show_word = undefined
         }
 
         res.render('index', {
