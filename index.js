@@ -76,42 +76,84 @@ const Words = require('./modules/Words')
 
         res.locals.nav = {
             title: config.get('title.suffix'),
-            links
+            links,
         }
+
+        res.locals.session = req.session
 
         next()
     })
 
-    app.get(['/', '/person', '/world', '/object', '/action', '/nature', '/random'], (req, res) => {
-        let word = undefined
-        let category = undefined
+    app.get('/complete', (req, res) => {
+        req.session.complete.push({
+            category: req.query.category,
+            word: req.query.word
+        })
 
-        if (req.originalUrl.includes('person')) {
-            category = 'Person'
-            word = words.generateWord(category.toLowerCase())
-        } else if (req.originalUrl.includes('world')) {
-            category = 'World'
-            word = words.generateWord(category.toLowerCase())
-        } else if (req.originalUrl.includes('object')) {
-            category = 'Object'
-            word = words.generateWord(category.toLowerCase())
-        } else if (req.originalUrl.includes('action')) {
-            category = 'Action'
-            word = words.generateWord(category.toLowerCase())
-        } else if (req.originalUrl.includes('nature')) {
-            category = 'Nature'
-            word = words.generateWord(category.toLowerCase())
-        } else if (req.originalUrl.includes('random')) {
-            category = 'Random'
-            word = words.generateWord(category.toLowerCase())
+        if (req.query.skipped) {
+            req.session.skipped = req.session.skipped.filter(item => item.word !== req.query.word)
         }
 
-        console.log(category, word)
+        res.redirect('/' + (req.session.last.slug || ''))
+    })
+    
+    app.get('/skip', (req, res) => {
+        req.session.skipped.push({
+            category: req.query.category,
+            word: req.query.word
+        })
+        res.redirect('/' + (req.session.last.slug || ''))
+    })
+
+    app.get('/start', (req, res) => {
+        req.session.complete = []
+        req.session.skipped = []
+        req.session.running = true
+        req.session.time = Number(req.query.time)
+        req.session.end = (+new Date()) + Number(req.query.time) * 60 * 1000
+        res.redirect('/' + (req.session.last.slug || ''))
+    })
+
+    app.get('/stop', (req, res) => {
+        req.session.running = false
+        res.redirect('/' + (req.session.last.slug || ''))
+    })
+
+    app.get(['/', '/person', '/world', '/object', '/action', '/nature', '/random'], (req, res) => {
+        let category = {}
+
+        if (req.originalUrl.includes('person')) {
+            category = { name: 'Person', slug: 'person' }
+        } else if (req.originalUrl.includes('world')) {
+            category = { name: 'World', slug: 'world' }
+        } else if (req.originalUrl.includes('object')) {
+            category = { name: 'Object', slug: 'object' }
+        } else if (req.originalUrl.includes('action')) {
+            category = { name: 'Action', slug: 'action' }
+        } else if (req.originalUrl.includes('nature')) {
+            category = { name: 'Nature', slug: 'nature' }
+        } else if (req.originalUrl.includes('random')) {
+            category = { name: 'Random', slug: 'random' }
+        }
+
+        const word = words.generateWord(category.slug)
+        req.session.last = category
+
+        const { time, score, skipped } = req.query
+
+        let timeleft = undefined
+        if (req.session.end) {
+            timeleft = Math.max(0, Math.floor((req.session.end - (+new Date())) / 1000))
+        }
 
         res.render('index', {
             page: { title: `Word Description :: ${config.get('title.suffix')}` },
             word,
-            category
+            category,
+            time,
+            score,
+            skipped,
+            timeleft
         })
     })
 
