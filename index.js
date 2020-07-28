@@ -162,9 +162,14 @@ const Words = require('./modules/Words')
         }
 
         if (req.session.show_word) {
-            category = JSON.parse(req.session.show_word.category)
-            word = req.session.show_word.word
-            req.session.show_word = undefined
+            try {
+                category = JSON.parse(req.session.show_word.category)
+                word = req.session.show_word.word
+                req.session.show_word = undefined
+            } catch(e) {
+                console.log('show word catch', e)
+                req.session.show_word = undefined
+            }
         }
 
         res.render('index', {
